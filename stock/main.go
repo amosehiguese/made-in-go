@@ -1,33 +1,38 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
-	"net/http"
 
-	"github.com/amosehiguese/stock/routes"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/joho/godotenv"
+	"github.com/amosehiguese/stock/api/config"
+	"github.com/amosehiguese/stock/api/server"
 )
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Unable to load env variables")
-	}
-}
+var addr = flag.String("addr", "127.0.0.1:8080", "server addr to serve on.")
+var readTimeout = flag.Int64("read-timeout", 10, "maximum duration for reading the entire request")
+var writeTimeout = flag.Int64("write-timeout", 600, "maximum amount of time to wait for the next request")
+var certFile = flag.String("cert-file", "", "path to tls cert-file")
+var KeyFile = flag.String("key-file", "", "path to tls key-file")
 
 func main() {
-	r := chi.NewRouter()
+	flag.Parse()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	config := config.Config{
+		Address: *addr,
+		ReadTimeout: *readTimeout,
+		WriteTimeout: *writeTimeout,
+		CertFile: *certFile,
+		KeyFile: *KeyFile,
+	}
 
-	routes.PublicRoutes(r)
-
-	fmt.Println("Server listenig on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	srv := server.NewHttpServer(config)
+	if config.CertFile == "" && config.KeyFile == "" {
+		if err :=srv.ListenAndServe(); err != nil {
+			log.Fatal("Error starting server ->", err)
+		}
+	} else {
+		if err := srv.ListenAndServeTLS(config.CertFile, config.KeyFile); err != nil {
+			log.Fatalln("Error starting server using TLS ->", err)
+		}
+	}
 }

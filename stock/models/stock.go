@@ -14,8 +14,10 @@ type Stock struct {
 	CurrentPrice    float64			`db:"current_price" json:"current_price" validate:"required,numeric"`
 	Company 		string 			`db:"company" json:"company" validate:"required,alpha,lte=255"`
 	MarketCap		float64			`db:"market_cap" json:"market_cap" validate:"required,numeric"`
-	Portfolios		[]Portfolio		`db:"portfolios" json:"portfolios,omitempty"`
+	Sector		string	`db:"sector" json:"sector,omitempty" validate:"required,lte=255"`
+	Holdings		[]Portfolio		`db:"holdings" json:"holdings,omitempty"`
 	Prices			[]StockPrice	`db:"prices" json:"prices,omitempty"`
+	Listings		[]Exchange		`db:"listings" json:"listings,omitempty"`
 }
 
 type Portfolio struct {
@@ -36,6 +38,17 @@ type StockPrice struct {
 	High			float64			`db:"high" json:"high" validate:"required,numeric"`
 	Low				float64			`db:"low" json:"low" validate:"required,numeric"`
 	Volume			uint64			`db:"volume" json:"volume" validate:"required"`
+}
+
+type Exchange struct {
+	Id			uuid.UUID
+	Code		string
+	Name		string
+	Country     string
+	City		string
+	TradingHours	string
+	NumberOfListings		string
+	Website			string
 }
 
 type StockQueries struct {
