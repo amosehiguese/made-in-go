@@ -4,15 +4,15 @@ import (
 	"flag"
 	"log"
 
-	"github.com/amosehiguese/stock/api/config"
-	"github.com/amosehiguese/stock/api/server"
+	"github.com/amosehiguese/stock/app/config"
+	"github.com/amosehiguese/stock/app/server"
 )
 
 var addr = flag.String("addr", "127.0.0.1:8080", "server addr to serve on.")
 var readTimeout = flag.Int64("read-timeout", 10, "maximum duration for reading the entire request")
 var writeTimeout = flag.Int64("write-timeout", 600, "maximum amount of time to wait for the next request")
-var certFile = flag.String("cert-file", "", "path to tls cert-file")
-var KeyFile = flag.String("key-file", "", "path to tls key-file")
+var certFile = flag.String("cert-file", "", "path to cert-file")
+var KeyFile = flag.String("key-file", "", "path to key-file")
 
 func main() {
 	flag.Parse()
@@ -32,7 +32,7 @@ func main() {
 		}
 	} else {
 		if err := srv.ListenAndServeTLS(config.CertFile, config.KeyFile); err != nil {
-			log.Fatalln("Error starting server using TLS ->", err)
+			log.Fatalln("Error starting server over TLS ->", err)
 		}
 	}
 }

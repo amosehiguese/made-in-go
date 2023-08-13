@@ -10,6 +10,7 @@ import (
 	"github.com/amosehiguese/stock/routes"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/joho/godotenv"
 )
@@ -17,7 +18,7 @@ import (
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Unable to load env variables")
+		log.Fatalln("Unable to load env variables ->", err)
 	}
 }
 
@@ -26,11 +27,8 @@ func NewHttpServer(config config.Config) *http.Server {
 
 	r := chi.NewRouter()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(render.SetContentType(render.ContentTypeJSON))
+	useCors(r)
+	useMiddlewares(r)
 
 	routes.PublicRoutes(r, api)
 	routes.PrivateRoutes(r, api)
@@ -43,30 +41,26 @@ func NewHttpServer(config config.Config) *http.Server {
 	}
 }
 
-
-type response struct {
-	Success bool `json:"success"`
-	Data    any  `json:"data"`
+func useCors(r *chi.Mux) {
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"htts://api/v1/*", "http://api/v1/*"},
+		AllowedMethods: []string{"GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders: []string{"Link"},
+		AllowCredentials: true,
+		MaxAge: 300,
+	}))
 }
 
-func NewResponse(success bool, data any) *response {
-	return &response{
-		Success: success,
-		Data:    data,
-	}
+func useMiddlewares(r *chi.Mux) {
+	r.Use(middleware.Logger)
+	r.Use(render.SetContentType(render.ContentTypeJSON))
+	r.Use(middleware.CleanPath)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Recoverer)
 }
 
-type errorResp struct {
-	Success   bool   `json:"success"`
-	ErrorCode int    `json:"error"`
-	Message   string `json:"message"`
-}
 
-func NewError(success bool, errCode int, msg string) *errorResp {
-	return &errorResp{
-		Success:   success,
-		ErrorCode: errCode,
-		Message:   msg,
-	}
-}
+
 
