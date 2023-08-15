@@ -9,6 +9,7 @@ import (
 
 type queries struct {
 	*models.StockQueries
+	*models.UserQueries
 }
 
 func OpenDbConn() *queries {
@@ -22,6 +23,6 @@ func OpenDbConn() *queries {
 		log.Fatal("Unable to connect to db ->", err)
 	}
 
-	return &queries{StockQueries: &models.StockQueries{DB:db}}
+	return &queries{StockQueries: &models.StockQueries{DB:db}, UserQueries: &models.UserQueries{DB:db}}
 
 }

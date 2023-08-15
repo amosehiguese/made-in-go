@@ -68,12 +68,12 @@ func (s *StockQueries) GetStocks(ctx context.Context) (*[]Stock, error) {
 	return &stocks, nil
 }
 
-func (s *StockQueries) GetStock(ctx context.Context, id uuid.UUID) (*Stock, error) {
+func (s *StockQueries) RetrieveStock(ctx context.Context, id uuid.UUID) (*Stock, error) {
 	var stock Stock
 
 	query := `Select * FROM stocks WHERE id = $1`
 
-	err := s.GetContext(ctx, &stock, query)
+	err := s.GetContext(ctx, &stock, query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -93,9 +93,9 @@ func (s *StockQueries) CreateStock(ctx context.Context, stock *Stock) error {
 }
 
 func (s *StockQueries) UpdateStock(ctx context.Context,id uuid.UUID, stock *Stock) error  {
-	query := `UPDATE stocks SET name=$1, company=$2, price=$3 market_cap=$4`
+	query := `UPDATE stocks SET name=$2, company=$3, price=$4 market_cap=$5 WHERE id=$1`
 
-	_, err := s.ExecContext(ctx, query, stock.Name, stock.Company, stock.CurrentPrice, stock.MarketCap )
+	_, err := s.ExecContext(ctx, query, id, stock.Name, stock.Company, stock.CurrentPrice, stock.MarketCap)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (s *StockQueries) UpdateStock(ctx context.Context,id uuid.UUID, stock *Stoc
 func (s *StockQueries) DeleteStock(ctx context.Context,id uuid.UUID) error {
 	query := `DELETE FROM stocks WHERE id=$1 `
 
-	_, err := s.ExecContext(ctx, query)
+	_, err := s.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/amosehiguese/stock/app/api"
 	"github.com/amosehiguese/stock/app/config"
 	"github.com/amosehiguese/stock/routes"
 	"github.com/go-chi/chi/middleware"
@@ -23,15 +22,14 @@ func init() {
 }
 
 func NewHttpServer(config config.Config) *http.Server {
-	api := api.NewHandler()
-
 	r := chi.NewRouter()
 
 	useCors(r)
 	useMiddlewares(r)
 
-	routes.PublicRoutes(r, api)
-	routes.PrivateRoutes(r, api)
+	routes.PublicRoutes(r)
+	routes.PrivateRoutes(r)
+	routes.AdminRoutes(r)
 
 	return &http.Server{
 		Addr: config.Address,
